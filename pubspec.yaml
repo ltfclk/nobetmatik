@@ -1,0 +1,27 @@
+name: nobet_matik_3
+description: "otomatik liste programı"
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.3.0-279.0.dev <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter # Bu satırı ekledim
+  shared_preferences: ^2.2.2
+  table_calendar: ^3.0.0
+  syncfusion_flutter_datepicker: ^24.1.45
+  intl: ^0.18.0
+  cupertino_icons: ^1.0.6 # Eğer bu bağımlılığı kullanıyorsanız ekleyin
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+# Aşağıdaki, uygulamanıza Cupertino Icons fontunu ekler.
+# iOS tarzı ikonlar için CupertinoIcons sınıfı ile kullanın.
+# cupertino_icons: ^1.0.2 # Eğer bu bağımlılığı kullanmıyorsanız bu satırı kaldırın veya yorum satırı yapın.
