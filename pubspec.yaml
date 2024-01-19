@@ -22,6 +22,9 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
 
-# Aşağıdaki, uygulamanıza Cupertino Icons fontunu ekler.
-# iOS tarzı ikonlar için CupertinoIcons sınıfı ile kullanın.
-# cupertino_icons: ^1.0.2 # Eğer bu bağımlılığı kullanmıyorsanız bu satırı kaldırın veya yorum satırı yapın.
+flutter:
+  assets:
+    - assets/logo.jpg
+    - assets/icons/gun_ayari.png
+    - assets/icons/liste_tarihi_sec.png
+    - assets/icons/personeller.png

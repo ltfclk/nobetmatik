@@ -4,6 +4,7 @@ import 'dart:ui' as ui;
 import 'ana_ekran.dart'; // Yeni oluşturulan AnaEkran widget'ını içe aktarıyoruz
 import 'package:flutter_localizations/flutter_localizations.dart'; // Yerelleştirme için gerekli paket
 
+
 void main() {
   runApp(MyApp());
 }
