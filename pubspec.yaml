@@ -22,9 +22,12 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
 
+
 flutter:
   assets:
     - assets/logo.jpg
     - assets/icons/gun_ayari.png
     - assets/icons/liste_tarihi_sec.png
     - assets/icons/personeller.png
+    - assets/openings/opening.jpg
+

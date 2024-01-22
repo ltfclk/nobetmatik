@@ -3,44 +3,20 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:syncfusion_flutter_datepicker/datepicker.dart';
 
-class GunAyari extends StatefulWidget {
+class KesinGun extends StatefulWidget {
   @override
-  _GunAyariState createState() => _GunAyariState();
+  _KesinGunState createState() => _KesinGunState();
 }
 
-class _GunAyariState extends State<GunAyari> {
+class _KesinGunState extends State<KesinGun> {
   List<String> _personelListesi = [];
-  Map<String, List<DateTime>> _personelIzinGunleri = {};
+  Map<String, List<DateTime>> _personelKesinCalismaGunleri = {};
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _ilkAcilisDialogGoster();
-    });
     _kayitliPersonelleriYukle();
   }
-
-  void _ilkAcilisDialogGoster() {
-    showCupertinoDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return CupertinoAlertDialog(
-          title: Text('Dikkat!'),
-          content: Text('Lütfen bir personelin izin günleri ile kesin çalışma günlerini aynı seçmemeye dikkat edin.'),
-          actions: <Widget>[
-            CupertinoDialogAction(
-              child: Text('Tamam'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
 
   void _kayitliPersonelleriYukle() async {
     final prefs = await SharedPreferences.getInstance();
@@ -49,20 +25,20 @@ class _GunAyariState extends State<GunAyari> {
       setState(() {
         _personelListesi = personeller;
       });
-      _izinGunleriniYukle();
+      _kesinCalismaGunleriniYukle();
     }
   }
 
-  void _izinGunleriniYukle() async {
+  void _kesinCalismaGunleriniYukle() async {
     final prefs = await SharedPreferences.getInstance();
     for (var personel in _personelListesi) {
-      List<String>? izinGunleriStringListesi = prefs.getStringList('izinGunleri_$personel');
-      if (izinGunleriStringListesi != null) {
-        List<DateTime> izinGunleri = izinGunleriStringListesi
-            .map((izinGunu) => DateTime.parse(izinGunu))
+      List<String>? kesinCalismaGunleriStringListesi = prefs.getStringList('kesinCalismaGunleri_$personel');
+      if (kesinCalismaGunleriStringListesi != null) {
+        List<DateTime> kesinCalismaGunleri = kesinCalismaGunleriStringListesi
+            .map((kesinCalismaGunu) => DateTime.parse(kesinCalismaGunu))
             .toList();
         setState(() {
-          _personelIzinGunleri[personel] = izinGunleri;
+          _personelKesinCalismaGunleri[personel] = kesinCalismaGunleri;
         });
       }
     }
@@ -83,12 +59,12 @@ class _GunAyariState extends State<GunAyari> {
                   onSelectionChanged: (DateRangePickerSelectionChangedArgs args) {
                     if (args.value is List<DateTime>) {
                       setState(() {
-                        _personelIzinGunleri[personel] = args.value;
+                        _personelKesinCalismaGunleri[personel] = args.value;
                       });
                     }
                   },
                   selectionMode: DateRangePickerSelectionMode.multiple,
-                  initialSelectedDates: _personelIzinGunleri[personel],
+                  initialSelectedDates: _personelKesinCalismaGunleri[personel],
                 ),
               ),
               CupertinoButton(
@@ -96,10 +72,10 @@ class _GunAyariState extends State<GunAyari> {
                 onPressed: () async {
                   Navigator.pop(context);
                   final prefs = await SharedPreferences.getInstance();
-                  List<String> izinGunleriString = _personelIzinGunleri[personel]!
+                  List<String> kesinCalismaGunleriString = _personelKesinCalismaGunleri[personel]!
                       .map((DateTime date) => date.toIso8601String())
                       .toList();
-                  await prefs.setStringList('izinGunleri_$personel', izinGunleriString);
+                  await prefs.setStringList('kesinCalismaGunleri_$personel', kesinCalismaGunleriString);
                 },
               )
             ],
@@ -109,29 +85,29 @@ class _GunAyariState extends State<GunAyari> {
     );
   }
 
-  void _tumIzinleriTemizle() async {
+  void _tumKesinCalismalariTemizle() async {
     final prefs = await SharedPreferences.getInstance();
     for (var personel in _personelListesi) {
-      await prefs.remove('izinGunleri_$personel');
+      await prefs.remove('kesinCalismaGunleri_$personel');
     }
     setState(() {
-      _personelIzinGunleri.clear();
+      _personelKesinCalismaGunleri.clear();
     });
   }
 
-  String _izinGunleriniFormatla(List<DateTime>? izinGunleri) {
-    if (izinGunleri == null || izinGunleri.isEmpty) return 'İzin günü yok';
-    return izinGunleri.map((DateTime date) => '${date.day}').join(', ');
+  String _kesinCalismaGunleriniFormatla(List<DateTime>? kesinCalismaGunleri) {
+    if (kesinCalismaGunleri == null || kesinCalismaGunleri.isEmpty) return 'kesin çalışma günü girilmemiş';
+    return kesinCalismaGunleri.map((DateTime date) => '${date.day}').join(', ');
   }
 
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
       navigationBar: CupertinoNavigationBar(
-        middle: Text('Personel İzin Gün Ayarı'),
+        middle: Text('Kesin Çalışma Günü Belirle'),
         backgroundColor: CupertinoColors.white,
         trailing: GestureDetector(
-          onTap: _tumIzinleriTemizle,
+          onTap: _tumKesinCalismalariTemizle,
           child: Text('Temizle', style: TextStyle(color: CupertinoColors.activeBlue)),
         ),
       ),
@@ -160,7 +136,7 @@ class _GunAyariState extends State<GunAyari> {
                     ),
                     Expanded(
                       child: Text(
-                        _izinGunleriniFormatla(_personelIzinGunleri[personel]),
+                        _kesinCalismaGunleriniFormatla(_personelKesinCalismaGunleri[personel]),
                         style: TextStyle(color: CupertinoColors.black),
                         textAlign: TextAlign.right,
                       ),

@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
-import 'dart:ui' as ui;
-import 'ana_ekran.dart'; // Yeni oluşturulan AnaEkran widget'ını içe aktarıyoruz
+import 'ana_ekran.dart'; // AnaEkran widget'ını içe aktarıyoruz
 import 'package:flutter_localizations/flutter_localizations.dart'; // Yerelleştirme için gerekli paket
-
 
 void main() {
   runApp(MyApp());
@@ -22,7 +20,7 @@ class MyApp extends StatelessWidget {
       localizationsDelegates: [
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate, // iOS için yerelleştirme desteği
+        GlobalCupertinoLocalizations.delegate,
       ],
       supportedLocales: [
         const Locale('tr', 'TR'), // Türkçe
@@ -42,8 +40,8 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    // Zamanlayıcı ile 5 saniye sonra AnaEkran'a geçiş yap
-    Timer(Duration(seconds: 5), () {
+    // Zamanlayıcı ile 1 saniye sonra AnaEkran'a geçiş yap
+    Timer(Duration(seconds: 10), () {
       Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => AnaEkran()));
     });
   }
@@ -51,48 +49,30 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
-        fit: StackFit.expand,
-        children: <Widget>[
-          Container(
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage('assets/logo.jpg'),
-                fit: BoxFit.cover,
-              ),
-            ),
-            child: BackdropFilter(
-              filter: ui.ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-              child: Container(
-                color: Colors.black.withOpacity(0),
-              ),
-            ),
+      // Arka plan rengini kaldırıyoruz çünkü artık arka plan resmi kullanacağız.
+      body: Container( // Container widget'ı ekleniyor.
+        decoration: BoxDecoration( // BoxDecoration ile arka plana resim ekleniyor.
+          image: DecorationImage(
+            image: AssetImage('assets/openings/opening.jpg'), // Resim yolu
+            fit: BoxFit.cover, // Resmin uygun şekilde kaplamasını sağlıyoruz.
           ),
-          Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                CircularProgressIndicator(),
-                SizedBox(height: 20),
-                Text(
-                  'Yükleniyor...',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
+        ),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              CircularProgressIndicator(),
+              SizedBox(height: 20),
+              Text(
+                'Yükleniyor...',
+                style: TextStyle(
+                  fontSize: 50.0,
+                  color: Colors.orangeAccent,
                 ),
-                SizedBox(height: 20),
-                Text(
-                  'Bu uygulama tüm sağlık çalışanları için\nLütfi Çelik tarafından ücretsiz olarak tasarlanmıştır.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 18,
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

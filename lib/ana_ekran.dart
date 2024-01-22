@@ -1,8 +1,25 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import 'liste_hazirla.dart';
 import 'personeller.dart';
 import 'gun_ayari.dart';
+import 'kesin_gun.dart';
+import 'vardiya_secimi.dart';
+
+// Diğer ekranlarınızın importlarını buraya ekleyin.
+
+void main() => runApp(MyApp());
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoApp(
+      home: AnaEkran(),
+    );
+  }
+}
 
 class AnaEkran extends StatefulWidget {
   @override
@@ -11,12 +28,18 @@ class AnaEkran extends StatefulWidget {
 
 class _AnaEkranState extends State<AnaEkran> {
   int kayitliPersonelSayisi = 0;
+  String kayitliTarih = '';
 
   @override
   void initState() {
     super.initState();
-    _kayitliPersonelSayisiniGetir();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _kayitliPersonelSayisiniGetir();
+      _kayitliTarihiGetir();
+    });
   }
+
 
   void _kayitliPersonelSayisiniGetir() async {
     final prefs = await SharedPreferences.getInstance();
@@ -26,88 +49,121 @@ class _AnaEkranState extends State<AnaEkran> {
     });
   }
 
-  Widget _buildButton(BuildContext context, String text, IconData icon, VoidCallback onPressed) {
-    return InkWell(
-      onTap: onPressed,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          Icon(icon, size: 48.0),
-          Text(
-            text,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
+  void _kayitliTarihiGetir() async {
+    final prefs = await SharedPreferences.getInstance();
+    final int? year = prefs.getInt('year');
+    final int? month = prefs.getInt('month');
+    setState(() {
+      kayitliTarih = (year != null && month != null) ? '$month/$year' : 'Ay/Yıl seçilmedi';
+    });
+  }
+
+  Widget _buildCupertinoButton(BuildContext context, String text, IconData icon, VoidCallback onPressed) {
+    return Expanded(
+      child: CupertinoButton(
+        onPressed: onPressed,
+        padding: EdgeInsets.zero,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Icon(icon, size: 48.0),
+            Text(
+              text,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildButtonWithCounter(BuildContext context, String text, IconData icon, int counter, VoidCallback onPressed) {
-    return InkWell(
-      onTap: onPressed,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          Icon(icon, size: 48.0),
-          Text(
-            text,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
+  Widget _buildCupertinoButtonWithCounter(BuildContext context, String text, IconData icon, int counter, String counterText, VoidCallback onPressed) {
+    return Expanded(
+      child: CupertinoButton(
+        onPressed: onPressed,
+        padding: EdgeInsets.zero,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Icon(icon, size: 48.0),
+            Text(
+              text,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
             ),
-          ),
-          SizedBox(height: 4),
-          Text(
-            '$counter kayıtlı personel',
-            style: TextStyle(
-              fontSize: 14,
+            SizedBox(height: 4),
+            Text(
+              counterText,
+              style: TextStyle(
+                fontSize: 14,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    // Ekran boyutuna göre crossAxisCount değerini belirle
-    int crossAxisCount = MediaQuery.of(context).size.width > 600 ? 3 : 2;
-
-    // Ekran boyutuna göre childAspectRatio değerini belirle
-    double childAspectRatio = (MediaQuery.of(context).size.width / crossAxisCount) / (MediaQuery.of(context).size.height / (crossAxisCount + 1));
-
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Ana Ekran'),
+    return CupertinoPageScaffold(
+      navigationBar: CupertinoNavigationBar(
+        middle: Text('Nöbetmatik'),
       ),
-      body: GridView.count(
-        crossAxisCount: crossAxisCount,
-        childAspectRatio: childAspectRatio,
-        mainAxisSpacing: 8.0,
-        crossAxisSpacing: 8.0,
-        padding: EdgeInsets.all(8.0),
-        children: <Widget>[
-          _buildButton(context, 'Liste Tarihi Seç', Icons.date_range, () {
-            Navigator.of(context).push(MaterialPageRoute(builder: (context) => ListeHazirla()));
-          }),
-          _buildButtonWithCounter(context, 'Personel Listesi', Icons.list, kayitliPersonelSayisi, () {
-            Navigator.of(context).push(MaterialPageRoute(builder: (context) => Personeller())).then((_) => _kayitliPersonelSayisiniGetir());
-          }),
-          _buildButton(context, 'Personel Gün Ayarı', Icons.calendar_today, () {
-            Navigator.of(context).push(MaterialPageRoute(builder: (context) => GunAyari()));
-          }),
-          _buildButton(context, 'Buton 4', Icons.add_circle_outline, () {
-            // Buton 4'e basıldığında yapılacak işlem
-          }),
-        ],
+      child: SafeArea(
+        child: ListView(
+          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Row(
+                children: <Widget>[
+                  _buildCupertinoButtonWithCounter(context, 'Liste Tarihi Seç', CupertinoIcons.calendar, kayitliPersonelSayisi, 'Seçili Tarih: $kayitliTarih', () {
+                    Navigator.of(context).push(CupertinoPageRoute(builder: (context) => ListeHazirla())).then((_) => _kayitliTarihiGetir());
+                  }),
+                  _buildCupertinoButtonWithCounter(context, 'Personel Listesi', CupertinoIcons.person_2_fill, kayitliPersonelSayisi, '$kayitliPersonelSayisi kayıtlı personel', () {
+                    Navigator.of(context).push(CupertinoPageRoute(builder: (context) => Personeller())).then((_) => _kayitliPersonelSayisiniGetir());
+                  }),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Row(
+                children: <Widget>[
+                  _buildCupertinoButton(context, 'Personel İzin Yönetimi', CupertinoIcons.time, () {
+                    Navigator.of(context).push(CupertinoPageRoute(builder: (context) => GunAyari()));
+                  }),
+                  _buildCupertinoButton(context, 'Kesin Çalışma Günü', CupertinoIcons.calendar_today, () {
+                    Navigator.of(context).push(CupertinoPageRoute(builder: (context) => KesinGun()));
+                  }),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Row(
+                children: <Widget>[
+                  _buildCupertinoButton(context, 'Vardiya Seçimi', CupertinoIcons.calendar_badge_plus, () {
+                    Navigator.of(context).push(CupertinoPageRoute(builder: (context) => VardiyaSecimi())); // Buton 5'e basıldığında yapılacak işlemler
+                  }),
+                  _buildCupertinoButton(context, 'Buton 6', CupertinoIcons.delete, () {
+                    // Buton 6'ya basıldığında yapılacak işlemler
+                    print('Buton 6 tıklandı');
+                  }),
+                ],
+              ),
+            ),
+            // Buraya daha fazla widget ekleyebilirsiniz.
+          ],
+        ),
       ),
     );
   }
 }
-
-void main() => runApp(MaterialApp(home: AnaEkran()));
