@@ -1,9 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-void main() {
-  runApp(MyApp());
-}
+void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
   @override
@@ -28,9 +27,60 @@ class _VardiyaSecimiState extends State<VardiyaSecimi> {
   int haftaSonuVardiyaSayisi = 1;
   int resmiTatilVardiyaSayisi = 1;
 
-  List<TextEditingController> haftaIciControllers = [TextEditingController(text: '08.00-16.00')];
-  List<TextEditingController> haftaSonuControllers = [TextEditingController(text: '08.00-16.00')];
-  List<TextEditingController> resmiTatilControllers = [TextEditingController(text: '08.00-16.00')];
+  List<TextEditingController> haftaIciControllers = [];
+  List<TextEditingController> haftaSonuControllers = [];
+  List<TextEditingController> resmiTatilControllers = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadVardiyaData();
+  }
+
+  _loadVardiyaData() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      haftaIciVardiyaSayisi = prefs.getInt('haftaIciVardiyaSayisi') ?? 1;
+      haftaSonuVardiyaSayisi = prefs.getInt('haftaSonuVardiyaSayisi') ?? 1;
+      resmiTatilVardiyaSayisi = prefs.getInt('resmiTatilVardiyaSayisi') ?? 1;
+
+      haftaIciControllers = List.generate(
+        haftaIciVardiyaSayisi,
+            (index) => TextEditingController(
+          text: prefs.getString('haftaIciVardiya$index') ?? '08.00-16.00',
+        ),
+      );
+      haftaSonuControllers = List.generate(
+        haftaSonuVardiyaSayisi,
+            (index) => TextEditingController(
+          text: prefs.getString('haftaSonuVardiya$index') ?? '08.00-16.00',
+        ),
+      );
+      resmiTatilControllers = List.generate(
+        resmiTatilVardiyaSayisi,
+            (index) => TextEditingController(
+          text: prefs.getString('resmiTatilVardiya$index') ?? '08.00-16.00',
+        ),
+      );
+    });
+  }
+
+  _saveVardiyaData() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('haftaIciVardiyaSayisi', haftaIciVardiyaSayisi);
+    await prefs.setInt('haftaSonuVardiyaSayisi', haftaSonuVardiyaSayisi);
+    await prefs.setInt('resmiTatilVardiyaSayisi', resmiTatilVardiyaSayisi);
+
+    for (int i = 0; i < haftaIciControllers.length; i++) {
+      await prefs.setString('haftaIciVardiya$i', haftaIciControllers[i].text);
+    }
+    for (int i = 0; i < haftaSonuControllers.length; i++) {
+      await prefs.setString('haftaSonuVardiya$i', haftaSonuControllers[i].text);
+    }
+    for (int i = 0; i < resmiTatilControllers.length; i++) {
+      await prefs.setString('resmiTatilVardiya$i', resmiTatilControllers[i].text);
+    }
+  }
 
   @override
   void dispose() {
@@ -41,66 +91,70 @@ class _VardiyaSecimiState extends State<VardiyaSecimi> {
   }
 
   void _updateVardiyaSayisi(bool increment, String vardiyaTuru) {
-    if (increment) {
-      bool canIncrement = false;
-      if (vardiyaTuru == 'haftaIci') {
-        canIncrement = haftaIciVardiyaSayisi < 3;
-      } else if (vardiyaTuru == 'haftaSonu') {
-        canIncrement = haftaSonuVardiyaSayisi < 3;
-      } else if (vardiyaTuru == 'resmiTatil') {
-        canIncrement = resmiTatilVardiyaSayisi < 3;
-      }
-
-      if (!canIncrement) {
-        // Kullanıcıya bir CupertinoAlertDialog göster
-        showCupertinoDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return CupertinoAlertDialog(
-              title: Text('Uyarı'),
-              content: Text('Maksimum vardiya sayısına ulaştınız! Yani şimdilik :) '),
-              actions: <Widget>[
-                CupertinoDialogAction(
-                  child: Text('Tamam'),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                ),
-              ],
-            );
-          },
-        );
-      } else {
-        setState(() {
-          if (vardiyaTuru == 'haftaIci') {
-            haftaIciVardiyaSayisi++;
-            haftaIciControllers.add(TextEditingController(text: '08.00-16.00'));
-          } else if (vardiyaTuru == 'haftaSonu') {
-            haftaSonuVardiyaSayisi++;
-            haftaSonuControllers.add(TextEditingController(text: '08.00-16.00'));
-          } else if (vardiyaTuru == 'resmiTatil') {
-            resmiTatilVardiyaSayisi++;
-            resmiTatilControllers.add(TextEditingController(text: '08.00-16.00'));
+    setState(() {
+      int sayi;
+      List<TextEditingController> controllers;
+      switch (vardiyaTuru) {
+        case 'haftaIci':
+          sayi = haftaIciVardiyaSayisi;
+          controllers = haftaIciControllers;
+          if (increment && sayi < 3) {
+            sayi++;
+            controllers.add(TextEditingController(text: '08.00-16.00'));
+          } else if (!increment && sayi > 1) {
+            sayi--;
+            controllers.last.dispose();
+            controllers.removeLast();
           }
-        });
+          haftaIciVardiyaSayisi = sayi;
+          break;
+        case 'haftaSonu':
+          sayi = haftaSonuVardiyaSayisi;
+          controllers = haftaSonuControllers;
+          if (increment && sayi < 3) {
+            sayi++;
+            controllers.add(TextEditingController(text: '08.00-16.00'));
+          } else if (!increment && sayi > 1) {
+            sayi--;
+            controllers.last.dispose();
+            controllers.removeLast();
+          }
+          haftaSonuVardiyaSayisi = sayi;
+          break;
+        case 'resmiTatil':
+          sayi = resmiTatilVardiyaSayisi;
+          controllers = resmiTatilControllers;
+          if (increment && sayi < 3) {
+            sayi++;
+            controllers.add(TextEditingController(text: '08.00-16.00'));
+          } else if (!increment && sayi > 0) {
+            sayi--;
+            controllers.last.dispose();
+            controllers.removeLast();
+          }
+          resmiTatilVardiyaSayisi = sayi;
+          break;
       }
-    } else {
-      setState(() {
-        if (vardiyaTuru == 'haftaIci' && haftaIciVardiyaSayisi > 1) {
-          haftaIciVardiyaSayisi--;
-          var removedController = haftaIciControllers.removeLast();
-          removedController.dispose();
-        } else if (vardiyaTuru == 'haftaSonu' && haftaSonuVardiyaSayisi > 1) {
-          haftaSonuVardiyaSayisi--;
-          var removedController = haftaSonuControllers.removeLast();
-          removedController.dispose();
-        } else if (vardiyaTuru == 'resmiTatil' && resmiTatilVardiyaSayisi > 1) {
-          resmiTatilVardiyaSayisi--;
-          var removedController = resmiTatilControllers.removeLast();
-          removedController.dispose();
-        }
-      });
-    }
+      _saveVardiyaData(); // Save the updated data
+    });
+  }
+
+  void _showMaxVardiyasAlert() {
+    showCupertinoDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return CupertinoAlertDialog(
+          title: Text('Uyarı'),
+          content: Text('Maksimum vardiya sayısına ulaştınız! Yani şimdilik :)'),
+          actions: <Widget>[
+            CupertinoDialogAction(
+              child: Text('Tamam'),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+          ],
+        );
+      },
+    );
   }
 
 
@@ -115,7 +169,7 @@ class _VardiyaSecimiState extends State<VardiyaSecimi> {
           children: <Widget>[
             buildVardiyaSection('Hafta İçi Vardiya Saatlerini Düzenleyin', haftaIciControllers, 'haftaIci'),
             buildVardiyaSection('Hafta Sonu Vardiya Saatlerini Düzenleyin', haftaSonuControllers, 'haftaSonu'),
-            buildVardiyaSection('Resmi Tatil Vardiya Saatlerini Düzenleyin', resmiTatilControllers, 'resmiTatil'),
+            buildVardiyaSection('Resmi Tatil Vardiya Saatlerini Düzenleyin                     (Resmi tatil yoksa eklemeyin)', resmiTatilControllers, 'resmiTatil'),
           ],
         ),
       ),
@@ -185,7 +239,7 @@ class _VardiyaSecimiState extends State<VardiyaSecimi> {
         placeholder: 'HH.MM-HH.MM',
         onEditingComplete: () {
           if (!_isValidTime(controller.text)) {
-            // Hatalı format girildiğinde kullanıcıyı uyar
+
             showCupertinoDialog(
               context: context,
               builder: (BuildContext context) {
@@ -203,7 +257,7 @@ class _VardiyaSecimiState extends State<VardiyaSecimi> {
                 );
               },
             );
-            // Hatalı giriş yapıldığında, kullanıcıyı hatalı girdiği yere geri götür
+
             controller.text = '';
           }
         },
@@ -247,18 +301,18 @@ class _VardiyaSecimiState extends State<VardiyaSecimi> {
     return true;
   }
 }
-// Yeni TextInputFormatter'ınız
+
 class _TimeInputFormatter extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
     String newText = newValue.text;
 
-    // Eğer kullanıcı silme işlemi yapıyorsa, newText'i doğrudan döndür
+
     if (newValue.text.length < oldValue.text.length) {
       return newValue;
     }
 
-    // İlk noktayı ekleyerek HH.MM formatını zorla
+
     if (newText.length == 2 && oldValue.text.length == 1) {
       return TextEditingValue(
         text: '$newText.',
@@ -282,14 +336,13 @@ class _TimeInputFormatter extends TextInputFormatter {
       );
     }
 
-    // Kullanıcı fazladan bir şeyler girmişse, bunu kırptık
+
     else if (newText.length > 11) {
       return TextEditingValue(
         text: newText.substring(0, 11),
         selection: TextSelection.collapsed(offset: 11),
       );
     }
-
     return newValue;
   }
 }
