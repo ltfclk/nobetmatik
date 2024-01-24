@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
-
+import 'package:shared_preferences/shared_preferences.dart';
 void main() {
   runApp(MyApp());
 }
@@ -23,6 +23,7 @@ class VardiyaSecimi extends StatefulWidget {
   _VardiyaSecimiState createState() => _VardiyaSecimiState();
 }
 
+
 class _VardiyaSecimiState extends State<VardiyaSecimi> {
   int haftaIciVardiyaSayisi = 1;
   int haftaSonuVardiyaSayisi = 1;
@@ -31,6 +32,8 @@ class _VardiyaSecimiState extends State<VardiyaSecimi> {
   List<TextEditingController> haftaIciControllers = [TextEditingController(text: '08.00-16.00')];
   List<TextEditingController> haftaSonuControllers = [TextEditingController(text: '08.00-16.00')];
   List<TextEditingController> resmiTatilControllers = [TextEditingController(text: '08.00-16.00')];
+
+
 
   @override
   void dispose() {

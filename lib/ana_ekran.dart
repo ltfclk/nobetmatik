@@ -7,7 +7,7 @@ import 'personeller.dart';
 import 'gun_ayari.dart';
 import 'kesin_gun.dart';
 import 'vardiya_secimi.dart';
-
+import 'kontrol.dart';
 // Diğer ekranlarınızın importlarını buraya ekleyin.
 
 void main() => runApp(MyApp());
@@ -153,9 +153,8 @@ class _AnaEkranState extends State<AnaEkran> {
                   _buildCupertinoButton(context, 'Vardiya Seçimi', CupertinoIcons.calendar_badge_plus, () {
                     Navigator.of(context).push(CupertinoPageRoute(builder: (context) => VardiyaSecimi())); // Buton 5'e basıldığında yapılacak işlemler
                   }),
-                  _buildCupertinoButton(context, 'Buton 6', CupertinoIcons.delete, () {
-                    // Buton 6'ya basıldığında yapılacak işlemler
-                    print('Buton 6 tıklandı');
+                  _buildCupertinoButton(context, 'Kontrol Sayfası', CupertinoIcons.check_mark_circled, () {
+                    Navigator.of(context).push(CupertinoPageRoute(builder: (context) => KontrolSayfasi()));
                   }),
                 ],
               ),
