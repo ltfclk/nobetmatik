@@ -284,7 +284,7 @@ class _VardiyaSecimiState extends State<VardiyaSecimi> {
       child: CupertinoTextField(
         controller: controller,
         keyboardType: TextInputType.number,
-        placeholder: 'Örnek: 16.00-08.00',
+        placeholder: 'Örnek: 08.00-16.00',
         onEditingComplete: () {
           // Klavye kapandığında veya başka bir input alanına geçildiğinde
           FocusScope.of(context).unfocus(); // Klavyeyi kapat
@@ -296,8 +296,8 @@ class _VardiyaSecimiState extends State<VardiyaSecimi> {
               context: context,
               builder: (BuildContext context) {
                 return CupertinoAlertDialog(
-                  title: Text('Yanlış Format'),
-                  content: Text('Lütfen geçerli bir saat aralığı girin: SS.DK-SS.DK'),
+                  title: Text('Yanlış Saat Aralığı'),
+                  content: Text('Lütfen geçerli bir saat aralığı girin: SS.DK-SS.DK örnek:08.00-16.00 '),
                   actions: <Widget>[
                     CupertinoDialogAction(
                       child: Text('Tamam'),

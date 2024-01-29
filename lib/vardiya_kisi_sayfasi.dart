@@ -1,5 +1,5 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart'; // Bazı Material widget'ları için eklendi
+import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class VardiyaKisiSayfasi extends StatefulWidget {
@@ -42,6 +42,7 @@ class _VardiyaKisiSayfasiState extends State<VardiyaKisiSayfasi> {
     return CupertinoPageScaffold(
       navigationBar: CupertinoNavigationBar(
         middle: Text('Vardiya Kişi Sayısı'),
+        previousPageTitle: 'Geri',
       ),
       child: SafeArea(
         child: SingleChildScrollView(
@@ -52,11 +53,11 @@ class _VardiyaKisiSayfasiState extends State<VardiyaKisiSayfasi> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   buildSectionTitle(context, 'Hafta İçi Vardiyalar'),
-                  buildVardiyaListesi(haftaIciVardiyaSaatleri),
+                  buildVardiyaListesi(context, haftaIciVardiyaSaatleri),
                   buildSectionTitle(context, 'Hafta Sonu Vardiyalar'),
-                  buildVardiyaListesi(haftaSonuVardiyaSaatleri),
+                  buildVardiyaListesi(context, haftaSonuVardiyaSaatleri),
                   buildSectionTitle(context, 'Resmi Tatil Vardiyalar'),
-                  buildVardiyaListesi(resmiTatilVardiyaSaatleri),
+                  buildVardiyaListesi(context, resmiTatilVardiyaSaatleri),
                 ],
               ),
             ),
@@ -72,20 +73,33 @@ class _VardiyaKisiSayfasiState extends State<VardiyaKisiSayfasi> {
       child: Text(
         title,
         style: TextStyle(
-          fontSize: 18.0,
+          fontSize: 22.0,
           fontWeight: FontWeight.bold,
+          color: CupertinoTheme.of(context).primaryColor,
         ),
       ),
     );
   }
 
-  Widget buildVardiyaListesi(List<String> vardiyalar) {
+  Widget buildVardiyaListesi(BuildContext context, List<String> vardiyalar) {
     if (vardiyalar.isEmpty) {
-      return Text('Kayıtlı vardiya yok.');
+      return Padding(
+        padding: EdgeInsets.symmetric(vertical: 10.0),
+        child: Text(
+          'Kayıtlı vardiya yok.',
+          style: TextStyle(color: CupertinoColors.systemGrey),
+        ),
+      );
     }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: vardiyalar.map((saat) => Text(saat)).toList(),
+      children: vardiyalar.map((saat) => Text(
+        saat,
+        style: TextStyle(
+          fontSize: 18.0,
+          color: CupertinoColors.black,
+        ),
+      )).toList(),
     );
   }
 }
