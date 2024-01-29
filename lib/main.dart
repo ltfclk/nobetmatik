@@ -41,7 +41,7 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
     // Zamanlayıcı ile 1 saniye sonra AnaEkran'a geçiş yap
-    Timer(Duration(seconds: 10), () {
+    Timer(Duration(seconds: 1), () {
       Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => AnaEkran()));
     });
   }

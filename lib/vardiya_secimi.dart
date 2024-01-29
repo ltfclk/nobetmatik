@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 void main() => runApp(MyApp());
 
+
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -23,6 +24,9 @@ class VardiyaSecimi extends StatefulWidget {
 }
 
 class _VardiyaSecimiState extends State<VardiyaSecimi> {
+
+
+
   int haftaIciVardiyaSayisi = 1;
   int haftaSonuVardiyaSayisi = 1;
   int resmiTatilVardiyaSayisi = 1;
@@ -31,10 +35,23 @@ class _VardiyaSecimiState extends State<VardiyaSecimi> {
   List<TextEditingController> haftaSonuControllers = [];
   List<TextEditingController> resmiTatilControllers = [];
 
+
+
   @override
   void initState() {
     super.initState();
     _loadVardiyaData();
+    _addListenerToControllers(haftaIciControllers);
+    _addListenerToControllers(haftaSonuControllers);
+    _addListenerToControllers(resmiTatilControllers);
+  }
+
+  void _addListenerToControllers(List<TextEditingController> controllers) {
+    for (var controller in controllers) {
+      controller.addListener(() {
+        _saveVardiyaData();
+      });
+    }
   }
 
   _loadVardiyaData() async {
@@ -98,10 +115,11 @@ class _VardiyaSecimiState extends State<VardiyaSecimi> {
         case 'haftaIci':
           sayi = haftaIciVardiyaSayisi;
           controllers = haftaIciControllers;
+
           if (increment && sayi < 3) {
             sayi++;
-            controllers.add(TextEditingController(text: '08.00-16.00'));
-          } else if (!increment && sayi > 1) {
+            controllers.add(TextEditingController()); // Varsayılan değer atanmıyor
+          } else if (!increment && sayi > 0) {
             sayi--;
             controllers.last.dispose();
             controllers.removeLast();
@@ -113,8 +131,8 @@ class _VardiyaSecimiState extends State<VardiyaSecimi> {
           controllers = haftaSonuControllers;
           if (increment && sayi < 3) {
             sayi++;
-            controllers.add(TextEditingController(text: '08.00-16.00'));
-          } else if (!increment && sayi > 1) {
+            controllers.add(TextEditingController()); // Varsayılan değer atanmıyor
+          } else if (!increment && sayi > 0) {
             sayi--;
             controllers.last.dispose();
             controllers.removeLast();
@@ -126,7 +144,7 @@ class _VardiyaSecimiState extends State<VardiyaSecimi> {
           controllers = resmiTatilControllers;
           if (increment && sayi < 3) {
             sayi++;
-            controllers.add(TextEditingController(text: '08.00-16.00'));
+            controllers.add(TextEditingController()); // Varsayılan değer atanmıyor
           } else if (!increment && sayi > 0) {
             sayi--;
             controllers.last.dispose();
@@ -139,23 +157,8 @@ class _VardiyaSecimiState extends State<VardiyaSecimi> {
     });
   }
 
-  void _showMaxVardiyasAlert() {
-    showCupertinoDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return CupertinoAlertDialog(
-          title: Text('Uyarı'),
-          content: Text('Maksimum vardiya sayısına ulaştınız! Yani şimdilik :)'),
-          actions: <Widget>[
-            CupertinoDialogAction(
-              child: Text('Tamam'),
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-          ],
-        );
-      },
-    );
-  }
+
+
 
 
   @override
@@ -236,16 +239,17 @@ class _VardiyaSecimiState extends State<VardiyaSecimi> {
       child: CupertinoTextField(
         controller: controller,
         keyboardType: TextInputType.number,
-        placeholder: 'HH.MM-HH.MM',
+        placeholder: 'Örnek: 16.00-08.00',
         onEditingComplete: () {
+          // Saat formatının doğruluğunu kontrol ediyoruz
           if (!_isValidTime(controller.text)) {
-
+            // Eğer format yanlışsa kullanıcıyı uyarıyoruz
             showCupertinoDialog(
               context: context,
               builder: (BuildContext context) {
                 return CupertinoAlertDialog(
                   title: Text('Yanlış Format'),
-                  content: Text('Lütfen geçerli bir saat aralığı girin: HH.MM-HH.MM'),
+                  content: Text('Lütfen geçerli bir saat aralığı girin: SS.DK-SS.DK'),
                   actions: <Widget>[
                     CupertinoDialogAction(
                       child: Text('Tamam'),
@@ -257,8 +261,11 @@ class _VardiyaSecimiState extends State<VardiyaSecimi> {
                 );
               },
             );
-
+            // Yanlış girilen değeri siliyoruz
             controller.text = '';
+          } else {
+            // Değer doğruysa kaydediyoruz
+            _saveVardiyaData();
           }
         },
         inputFormatters: [
@@ -346,3 +353,4 @@ class _TimeInputFormatter extends TextInputFormatter {
     return newValue;
   }
 }
+
