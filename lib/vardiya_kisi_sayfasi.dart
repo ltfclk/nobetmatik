@@ -14,11 +14,21 @@ class _VardiyaKisiSayfasiState extends State<VardiyaKisiSayfasi> {
   List<String> haftaIciVardiyaSaatleri = [];
   List<String> haftaSonuVardiyaSaatleri = [];
   List<String> resmiTatilVardiyaSaatleri = [];
+  Map<String, TextEditingController> _controllers = {};
 
   @override
   void initState() {
     super.initState();
     _loadVardiyaData();
+  }
+
+  @override
+  void dispose() {
+    // Oluşturulan tüm controller'ları temizleyin.
+    _controllers.forEach((key, controller) {
+      controller.dispose();
+    });
+    super.dispose();
   }
 
   _loadVardiyaData() async {
@@ -34,6 +44,17 @@ class _VardiyaKisiSayfasiState extends State<VardiyaKisiSayfasi> {
               (i) => prefs.getString('haftaSonuVardiya$i') ?? '');
       resmiTatilVardiyaSaatleri = List.generate(resmiTatilVardiyaSayisi,
               (i) => prefs.getString('resmiTatilVardiya$i') ?? '');
+
+      // Her vardiya için bir TextEditingController oluşturun.
+      haftaIciVardiyaSaatleri.forEach((saat) {
+        _controllers[saat] = TextEditingController();
+      });
+      haftaSonuVardiyaSaatleri.forEach((saat) {
+        _controllers[saat] = TextEditingController();
+      });
+      resmiTatilVardiyaSaatleri.forEach((saat) {
+        _controllers[saat] = TextEditingController();
+      });
     });
   }
 
@@ -93,13 +114,42 @@ class _VardiyaKisiSayfasiState extends State<VardiyaKisiSayfasi> {
     }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: vardiyalar.map((saat) => Text(
-        saat,
-        style: TextStyle(
-          fontSize: 18.0,
-          color: CupertinoColors.black,
-        ),
+      children: vardiyalar.map((saat) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            saat,
+            style: TextStyle(
+              fontSize: 18.0,
+              color: CupertinoColors.black,
+            ),
+          ),
+          Row(
+            children: [
+              Text(
+                'Çalışacak personel sayısı:',
+                style: TextStyle(
+                  fontSize: 16.0,
+                  color: CupertinoColors.black,
+                ),
+              ),
+              SizedBox(width: 10),
+              Container(
+                width: 50,
+                child: CupertinoTextField(
+                  controller: _controllers[saat],
+                  keyboardType: TextInputType.number,
+                  placeholder: 'Sayı',
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 10), // Satırlar arasındaki boşluk
+        ],
       )).toList(),
     );
   }
+
+
 }
