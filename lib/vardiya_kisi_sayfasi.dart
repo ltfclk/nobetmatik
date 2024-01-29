@@ -1,6 +1,16 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+void main() => runApp(MyApp());
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoApp(
+      home: VardiyaKisiSayfasi(),
+    );
+  }
+}
 
 class VardiyaKisiSayfasi extends StatefulWidget {
   @override
@@ -8,53 +18,37 @@ class VardiyaKisiSayfasi extends StatefulWidget {
 }
 
 class _VardiyaKisiSayfasiState extends State<VardiyaKisiSayfasi> {
-  int haftaIciVardiyaSayisi = 0;
-  int haftaSonuVardiyaSayisi = 0;
-  int resmiTatilVardiyaSayisi = 0;
-  List<String> haftaIciVardiyaSaatleri = [];
-  List<String> haftaSonuVardiyaSaatleri = [];
-  List<String> resmiTatilVardiyaSaatleri = [];
-  Map<String, TextEditingController> _controllers = {};
+  List<String> haftaIciVardiyalar = [];
+  List<String> haftaSonuVardiyalar = [];
+  List<String> resmiTatilVardiyalar = [];
 
   @override
   void initState() {
     super.initState();
-    _loadVardiyaData();
+    _loadVardiyalar();
   }
 
-  @override
-  void dispose() {
-    // Oluşturulan tüm controller'ları temizleyin.
-    _controllers.forEach((key, controller) {
-      controller.dispose();
-    });
-    super.dispose();
-  }
+  Future<void> _loadVardiyalar() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    // Vardiya sayılarını al (varsayılan olarak 0)
+    final int haftaIciVardiyaSayisi = prefs.getInt('haftaIciVardiyaSayisi') ?? 0;
+    final int haftaSonuVardiyaSayisi = prefs.getInt('haftaSonuVardiyaSayisi') ?? 0;
+    final int resmiTatilVardiyaSayisi = prefs.getInt('resmiTatilVardiyaSayisi') ?? 0;
 
-  _loadVardiyaData() async {
-    final prefs = await SharedPreferences.getInstance();
+    // Vardiyaları yükle
     setState(() {
-      haftaIciVardiyaSayisi = prefs.getInt('haftaIciVardiyaSayisi') ?? 0;
-      haftaSonuVardiyaSayisi = prefs.getInt('haftaSonuVardiyaSayisi') ?? 0;
-      resmiTatilVardiyaSayisi = prefs.getInt('resmiTatilVardiyaSayisi') ?? 0;
-
-      haftaIciVardiyaSaatleri = List.generate(haftaIciVardiyaSayisi,
-              (i) => prefs.getString('haftaIciVardiya$i') ?? '');
-      haftaSonuVardiyaSaatleri = List.generate(haftaSonuVardiyaSayisi,
-              (i) => prefs.getString('haftaSonuVardiya$i') ?? '');
-      resmiTatilVardiyaSaatleri = List.generate(resmiTatilVardiyaSayisi,
-              (i) => prefs.getString('resmiTatilVardiya$i') ?? '');
-
-      // Her vardiya için bir TextEditingController oluşturun.
-      haftaIciVardiyaSaatleri.forEach((saat) {
-        _controllers[saat] = TextEditingController();
-      });
-      haftaSonuVardiyaSaatleri.forEach((saat) {
-        _controllers[saat] = TextEditingController();
-      });
-      resmiTatilVardiyaSaatleri.forEach((saat) {
-        _controllers[saat] = TextEditingController();
-      });
+      haftaIciVardiyalar = List.generate(
+        haftaIciVardiyaSayisi,
+            (i) => prefs.getString('haftaIciVardiya$i') ?? '',
+      );
+      haftaSonuVardiyalar = List.generate(
+        haftaSonuVardiyaSayisi,
+            (i) => prefs.getString('haftaSonuVardiya$i') ?? '',
+      );
+      resmiTatilVardiyalar = List.generate(
+        resmiTatilVardiyaSayisi,
+            (i) => prefs.getString('resmiTatilVardiya$i') ?? '',
+      );
     });
   }
 
@@ -62,94 +56,62 @@ class _VardiyaKisiSayfasiState extends State<VardiyaKisiSayfasi> {
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
       navigationBar: CupertinoNavigationBar(
-        middle: Text('Vardiya Kişi Sayısı'),
-        previousPageTitle: 'Geri',
+        middle: Text('Vardiya Saatleri'),
       ),
       child: SafeArea(
-        child: SingleChildScrollView(
-          child: Center(
-            child: Padding(
-              padding: EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  buildSectionTitle(context, 'Hafta İçi Vardiyalar'),
-                  buildVardiyaListesi(context, haftaIciVardiyaSaatleri),
-                  buildSectionTitle(context, 'Hafta Sonu Vardiyalar'),
-                  buildVardiyaListesi(context, haftaSonuVardiyaSaatleri),
-                  buildSectionTitle(context, 'Resmi Tatil Vardiyalar'),
-                  buildVardiyaListesi(context, resmiTatilVardiyaSaatleri),
-                ],
+        child: CustomScrollView(
+          slivers: <Widget>[
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.all(8),
+                child: Text('Haftaiçi Vardiyalar', style: CupertinoTheme.of(context).textTheme.navLargeTitleTextStyle),
               ),
             ),
-          ),
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                    (context, index) => VardiyaWidget(haftaIciVardiyalar[index]),
+                childCount: haftaIciVardiyalar.length,
+              ),
+            ),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.all(8),
+                child: Text('Haftasonu Vardiyalar', style: CupertinoTheme.of(context).textTheme.navLargeTitleTextStyle),
+              ),
+            ),
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                    (context, index) => VardiyaWidget(haftaSonuVardiyalar[index]),
+                childCount: haftaSonuVardiyalar.length,
+              ),
+            ),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.all(8),
+                child: Text('Resmi Tatil Vardiyalar', style: CupertinoTheme.of(context).textTheme.navLargeTitleTextStyle),
+              ),
+            ),
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                    (context, index) => VardiyaWidget(resmiTatilVardiyalar[index]),
+                childCount: resmiTatilVardiyalar.length,
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget buildSectionTitle(BuildContext context, String title) {
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: 8.0),
-      child: Text(
-        title,
-        style: TextStyle(
-          fontSize: 22.0,
-          fontWeight: FontWeight.bold,
-          color: CupertinoTheme.of(context).primaryColor,
-        ),
+  Widget VardiyaWidget(String vardiya) {
+    return Container(
+      decoration: BoxDecoration(
+        color: CupertinoColors.systemGrey5,
+        borderRadius: BorderRadius.circular(10),
       ),
+      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: EdgeInsets.all(16),
+      child: Text(vardiya, style: CupertinoTheme.of(context).textTheme.textStyle),
     );
   }
-
-  Widget buildVardiyaListesi(BuildContext context, List<String> vardiyalar) {
-    if (vardiyalar.isEmpty) {
-      return Padding(
-        padding: EdgeInsets.symmetric(vertical: 10.0),
-        child: Text(
-          'Kayıtlı vardiya yok.',
-          style: TextStyle(color: CupertinoColors.systemGrey),
-        ),
-      );
-    }
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: vardiyalar.map((saat) => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            saat,
-            style: TextStyle(
-              fontSize: 18.0,
-              color: CupertinoColors.black,
-            ),
-          ),
-          Row(
-            children: [
-              Text(
-                'Çalışacak personel sayısı:',
-                style: TextStyle(
-                  fontSize: 16.0,
-                  color: CupertinoColors.black,
-                ),
-              ),
-              SizedBox(width: 10),
-              Container(
-                width: 50,
-                child: CupertinoTextField(
-                  controller: _controllers[saat],
-                  keyboardType: TextInputType.number,
-                  placeholder: 'Sayı',
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 10), // Satırlar arasındaki boşluk
-        ],
-      )).toList(),
-    );
-  }
-
-
 }
