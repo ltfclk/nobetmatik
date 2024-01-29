@@ -84,27 +84,46 @@ class _VardiyaSecimiState extends State<VardiyaSecimi> {
 
   _saveVardiyaData() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt('haftaIciVardiyaSayisi', haftaIciVardiyaSayisi);
-    await prefs.setInt('haftaSonuVardiyaSayisi', haftaSonuVardiyaSayisi);
-    await prefs.setInt('resmiTatilVardiyaSayisi', resmiTatilVardiyaSayisi);
 
-    for (int i = 0; i < haftaIciControllers.length; i++) {
-      await prefs.setString('haftaIciVardiya$i', haftaIciControllers[i].text);
+    bool allFieldsFilled = true;
+    for (var controller in haftaIciControllers) {
+      if (controller.text.isEmpty) {
+        allFieldsFilled = false;
+        break;
+      }
     }
-    for (int i = 0; i < haftaSonuControllers.length; i++) {
-      await prefs.setString('haftaSonuVardiya$i', haftaSonuControllers[i].text);
+    for (var controller in haftaSonuControllers) {
+      if (controller.text.isEmpty) {
+        allFieldsFilled = false;
+        break;
+      }
     }
-    for (int i = 0; i < resmiTatilControllers.length; i++) {
-      await prefs.setString('resmiTatilVardiya$i', resmiTatilControllers[i].text);
+    for (var controller in resmiTatilControllers) {
+      if (controller.text.isEmpty) {
+        allFieldsFilled = false;
+        break;
+      }
     }
-  }
 
-  @override
-  void dispose() {
-    haftaIciControllers.forEach((controller) => controller.dispose());
-    haftaSonuControllers.forEach((controller) => controller.dispose());
-    resmiTatilControllers.forEach((controller) => controller.dispose());
-    super.dispose();
+    if (!allFieldsFilled) {
+      // Eğer tüm alanlar doldurulmamışsa kullanıcıya hata göster
+      // Hata mesajı gösterme kodu burada olacak
+    } else {
+      // Tüm alanlar doldurulmuşsa kaydetme işlemini yap
+      await prefs.setInt('haftaIciVardiyaSayisi', haftaIciVardiyaSayisi);
+      await prefs.setInt('haftaSonuVardiyaSayisi', haftaSonuVardiyaSayisi);
+      await prefs.setInt('resmiTatilVardiyaSayisi', resmiTatilVardiyaSayisi);
+
+      for (int i = 0; i < haftaIciControllers.length; i++) {
+        await prefs.setString('haftaIciVardiya$i', haftaIciControllers[i].text);
+      }
+      for (int i = 0; i < haftaSonuControllers.length; i++) {
+        await prefs.setString('haftaSonuVardiya$i', haftaSonuControllers[i].text);
+      }
+      for (int i = 0; i < resmiTatilControllers.length; i++) {
+        await prefs.setString('resmiTatilVardiya$i', resmiTatilControllers[i].text);
+      }
+    }
   }
 
   void _updateVardiyaSayisi(bool increment, String vardiyaTuru) {
@@ -188,7 +207,7 @@ class _VardiyaSecimiState extends State<VardiyaSecimi> {
           child: Text(
             title,
             style: CupertinoTheme.of(context).textTheme.navTitleTextStyle.copyWith(
-              color: CupertinoColors.activeBlue, // Başlık rengi
+              color: CupertinoColors.activeBlue,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -204,7 +223,6 @@ class _VardiyaSecimiState extends State<VardiyaSecimi> {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: <Widget>[
             CupertinoButton(
-              // Vardiya Çıkar butonu için metin eklendi
               child: Row(
                 children: <Widget>[
                   Icon(CupertinoIcons.minus),
@@ -215,7 +233,6 @@ class _VardiyaSecimiState extends State<VardiyaSecimi> {
               onPressed: () => _updateVardiyaSayisi(false, vardiyaTuru),
             ),
             CupertinoButton(
-              // Vardiya Ekle butonu için metin eklendi
               child: Row(
                 children: <Widget>[
                   Icon(CupertinoIcons.add),
@@ -225,11 +242,24 @@ class _VardiyaSecimiState extends State<VardiyaSecimi> {
               ),
               onPressed: () => _updateVardiyaSayisi(true, vardiyaTuru),
             ),
+            // Kaydet butonu burada eklendi
+            CupertinoButton(
+              child: Row(
+                children: <Widget>[
+                  Icon(CupertinoIcons.check_mark_circled_solid),
+                  SizedBox(width: 4),
+                  Text('Kaydet'),
+                ],
+              ),
+              onPressed: () => _saveVardiyaData(),
+            ),
           ],
         ),
       ],
     );
   }
+
+
 
 
 
@@ -241,9 +271,12 @@ class _VardiyaSecimiState extends State<VardiyaSecimi> {
         keyboardType: TextInputType.number,
         placeholder: 'Örnek: 16.00-08.00',
         onEditingComplete: () {
-          // Saat formatının doğruluğunu kontrol ediyoruz
-          if (!_isValidTime(controller.text)) {
-            // Eğer format yanlışsa kullanıcıyı uyarıyoruz
+          // Klavye kapandığında veya başka bir input alanına geçildiğinde
+          FocusScope.of(context).unfocus(); // Klavyeyi kapat
+          if (_isValidTime(controller.text)) {
+            _saveVardiyaData(); // Veriyi kaydet
+          } else {
+            // Format yanlışsa kullanıcıyı uyarmak için bir diyalog göster
             showCupertinoDialog(
               context: context,
               builder: (BuildContext context) {
@@ -261,11 +294,7 @@ class _VardiyaSecimiState extends State<VardiyaSecimi> {
                 );
               },
             );
-            // Yanlış girilen değeri siliyoruz
-            controller.text = '';
-          } else {
-            // Değer doğruysa kaydediyoruz
-            _saveVardiyaData();
+            controller.text = ''; // Yanlış girilen değeri temizle
           }
         },
         inputFormatters: [
@@ -274,6 +303,7 @@ class _VardiyaSecimiState extends State<VardiyaSecimi> {
       ),
     );
   }
+
 
 
   bool _isValidTime(String input) {
