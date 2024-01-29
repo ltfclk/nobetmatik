@@ -2,22 +2,39 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:showcaseview/showcaseview.dart';
 
 class ListeHazirla extends StatefulWidget {
   @override
   _ListeHazirlaState createState() => _ListeHazirlaState();
 }
 
-class _ListeHazirlaState extends State<ListeHazirla> {
+class _ListeHazirlaState extends State<ListeHazirla> with WidgetsBindingObserver {
   DateTime? secilenTarih;
   List<bool>? secilenGunler;
   List<String> secilenResmiTatiller = [];
   SharedPreferences? prefs;
+  final GlobalKey _showcaseKey = GlobalKey();
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _loadSavedData();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    Future.delayed(Duration.zero, () {
+      ShowCaseWidget.of(context).startShowCase([_showcaseKey]);
+    });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
   }
 
   void _loadSavedData() async {

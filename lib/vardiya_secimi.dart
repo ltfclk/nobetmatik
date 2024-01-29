@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+import  'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -222,42 +222,57 @@ class _VardiyaSecimiState extends State<VardiyaSecimi> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: <Widget>[
-            CupertinoButton(
-              child: Row(
-                children: <Widget>[
-                  Icon(CupertinoIcons.minus),
-                  SizedBox(width: 4),
-                  Text('Vardiya Çıkar'),
-                ],
+            Expanded(
+              child: CupertinoButton(
+                child: FittedBox(
+                  fit: BoxFit.fitWidth,
+                  child: Row(
+                    children: <Widget>[
+                      Icon(CupertinoIcons.minus),
+                      SizedBox(width: 4),
+                      Text('Vardiya Çıkar'),
+                    ],
+                  ),
+                ),
+                onPressed: () => _updateVardiyaSayisi(false, vardiyaTuru),
               ),
-              onPressed: () => _updateVardiyaSayisi(false, vardiyaTuru),
             ),
-            CupertinoButton(
-              child: Row(
-                children: <Widget>[
-                  Icon(CupertinoIcons.add),
-                  SizedBox(width: 4),
-                  Text('Vardiya Ekle'),
-                ],
+            Expanded(
+              child: CupertinoButton(
+                child: FittedBox(
+                  fit: BoxFit.fitWidth,
+                  child: Row(
+                    children: <Widget>[
+                      Icon(CupertinoIcons.add),
+                      SizedBox(width: 4),
+                      Text('Vardiya Ekle'),
+                    ],
+                  ),
+                ),
+                onPressed: () => _updateVardiyaSayisi(true, vardiyaTuru),
               ),
-              onPressed: () => _updateVardiyaSayisi(true, vardiyaTuru),
             ),
-            // Kaydet butonu burada eklendi
-            CupertinoButton(
-              child: Row(
-                children: <Widget>[
-                  Icon(CupertinoIcons.check_mark_circled_solid),
-                  SizedBox(width: 4),
-                  Text('Kaydet'),
-                ],
+            Expanded(
+              child: CupertinoButton(
+                child: FittedBox(
+                  fit: BoxFit.fitWidth,
+                  child: Row(
+                    children: <Widget>[
+                      Icon(CupertinoIcons.check_mark_circled_solid),
+                      SizedBox(width: 4),
+                      Text('Kaydet'),
+                    ],
+                  ),
+                ),
+                onPressed: () => _saveVardiyaData(),
               ),
-              onPressed: () => _saveVardiyaData(),
             ),
           ],
         ),
       ],
     );
   }
+
 
 
 
@@ -307,12 +322,12 @@ class _VardiyaSecimiState extends State<VardiyaSecimi> {
 
 
   bool _isValidTime(String input) {
-    // Saat formatını kontrol et (HH.MM-HH.MM)
+    // Saat formatını kontrol et (HH:MM-HH:MM)
     final validTimeRegExp = RegExp(r'^\d{1,2}\.\d{2}-\d{1,2}\.\d{2}$');
     if (!validTimeRegExp.hasMatch(input)) {
       return false;
     }
-    // Saatlerin geçerli olup olmadığını kontrol et
+
     var times = input.split('-');
     var startTime = times[0].split('.');
     var endTime = times[1].split('.');
@@ -330,12 +345,19 @@ class _VardiyaSecimiState extends State<VardiyaSecimi> {
       return false;
     }
 
-    // Başlangıç saatinin bitiş saatinden önce olduğunu kontrol et
-    if (startHour > endHour || (startHour == endHour && startMinute >= endMinute)) {
-      return false;
+    // Vardiya aynı gün içinde bitiyorsa, başlangıç saatinin bitiş saatinden önce olduğunu kontrol et
+    if (startHour < endHour || (startHour == endHour && startMinute <= endMinute)) {
+      return true;
     }
 
-    return true;
+    // Vardiya bir sonraki güne taşıyorsa ve bitiş saati başlangıç saatinden küçük veya eşitse, bu geçerli bir durumdur.
+    // Örneğin, bir vardiya akşam 16.00'da başlayıp, ertesi gün sabah 08.00'de bitiyor olabilir.
+    if (endHour < startHour || (endHour == startHour && endMinute <= startMinute)) {
+      return true; // Gece boyunca devam eden vardiya için geçerli
+    }
+
+    // Diğer tüm durumlar geçersizdir
+    return false;
   }
 }
 
@@ -383,4 +405,3 @@ class _TimeInputFormatter extends TextInputFormatter {
     return newValue;
   }
 }
-
