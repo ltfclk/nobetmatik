@@ -19,6 +19,7 @@ class VardiyaKisiSayfasi extends StatefulWidget {
 
 class _VardiyaKisiSayfasiState extends State<VardiyaKisiSayfasi> {
   List<String> tumVardiyalar = [];
+  Map<String, int> vardiyaKisiSayilari = {}; // Vardiyalardaki kişi sayılarını tutan map
 
   @override
   void initState() {
@@ -29,10 +30,16 @@ class _VardiyaKisiSayfasiState extends State<VardiyaKisiSayfasi> {
   Future<void> _loadVardiyalar() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    // Vardiyaları yükle ve türlerine göre sırala
+    // Vardiyaları ve kişi sayılarını yükle
     List<String> haftaIciVardiyalar = _loadVardiyaTuru(prefs, 'haftaIciVardiya', 'Haftaiçi ');
     List<String> haftaSonuVardiyalar = _loadVardiyaTuru(prefs, 'haftaSonuVardiya', 'Haftasonu ');
     List<String> resmiTatilVardiyalar = _loadVardiyaTuru(prefs, 'resmiTatilVardiya', 'Resmi Tatil ');
+
+    // Vardiyalardaki kişi sayılarını yükle
+    vardiyaKisiSayilari = {
+      for (var vardiya in [...haftaIciVardiyalar, ...haftaSonuVardiyalar, ...resmiTatilVardiyalar])
+        vardiya: prefs.getInt('$vardiya Kisi Sayisi') ?? 0,
+    };
 
     // Vardiyaları birleştir ve saatlerine göre sırala
     setState(() {
@@ -59,22 +66,76 @@ class _VardiyaKisiSayfasiState extends State<VardiyaKisiSayfasi> {
         child: ListView.builder(
           itemCount: tumVardiyalar.length,
           itemBuilder: (context, index) {
-            return VardiyaWidget(tumVardiyalar[index]);
+            return VardiyaWidget(tumVardiyalar[index], vardiyaKisiSayilari[tumVardiyalar[index]] ?? 0);
           },
         ),
       ),
     );
   }
 
-  Widget VardiyaWidget(String vardiya) {
+  // VardiyaWidget fonksiyonunuzu güncelleyin
+  Widget VardiyaWidget(String vardiya, int kisiSayisi) {
     return Container(
+      padding: EdgeInsets.all(8), // İç boşluk ekleyin
+      margin: EdgeInsets.only(bottom: 8), // Altta boşluk bırakın
       decoration: BoxDecoration(
-        color: CupertinoColors.systemGrey5,
-        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: CupertinoColors.systemGrey), // Kenarlık rengi
+        borderRadius: BorderRadius.circular(8), // Kenarlık yuvarlaklığı
       ),
-      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      padding: EdgeInsets.all(16),
-      child: Text(vardiya, style: CupertinoTheme.of(context).textTheme.textStyle),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(vardiya, style: CupertinoTheme.of(context).textTheme.textStyle),
+          SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Bu Vardiyada Çalışacak Kişi Sayısı: $kisiSayisi',
+                  style: CupertinoTheme.of(context).textTheme.textStyle.copyWith(fontSize: 14)),
+              CupertinoButton(
+                child: Text('Düzenle'),
+                onPressed: () => _showEditDialog(context, vardiya, kisiSayisi),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
+  }
+
+  Future<void> _showEditDialog(BuildContext context, String vardiya, int currentKisiSayisi) async {
+    final TextEditingController _controller = TextEditingController(text: currentKisiSayisi.toString());
+    return showCupertinoDialog(
+        context: context,
+        builder: (context) {
+          return CupertinoAlertDialog(
+            title: Text('Kişi Sayısını Düzenle'),
+            content: CupertinoTextField(controller: _controller),
+            actions: <Widget>[
+              CupertinoDialogAction(
+                child: Text('İptal'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+              CupertinoDialogAction(
+                child: Text('Kaydet'),
+                onPressed: () async {
+                  int newKisiSayisi = int.tryParse(_controller.text) ?? currentKisiSayisi;
+                  await _saveKisiSayisi(vardiya, newKisiSayisi);
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        });
+  }
+
+  Future<void> _saveKisiSayisi(String vardiya, int kisiSayisi) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('$vardiya Kisi Sayisi', kisiSayisi);
+    setState(() {
+      vardiyaKisiSayilari[vardiya] = kisiSayisi;
+    });
   }
 }
