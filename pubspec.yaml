@@ -1,4 +1,4 @@
-name: nobet_matik_3
+name: Nobetmatik
 description: "otomatik liste programı"
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
@@ -20,6 +20,7 @@ dependencies:
   showcaseview: '2.0.3'
 
 dev_dependencies:
+  flutter_launcher_icons: ^0.13.1
   flutter_test:
     sdk: flutter
 
@@ -31,3 +32,8 @@ flutter:
     - assets/icons/liste_tarihi_sec.png
     - assets/icons/personeller.png
     - assets/openings/opening.jpg
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/icons/icon.png"
