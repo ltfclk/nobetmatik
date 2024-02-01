@@ -153,13 +153,28 @@ class _AnaEkranState extends State<AnaEkran> {
                   _buildCupertinoButton(context, 'Vardiya Seçimi', CupertinoIcons.calendar_badge_plus, () {
                     Navigator.of(context).push(CupertinoPageRoute(builder: (context) => VardiyaSecimi())); // Buton 5'e basıldığında yapılacak işlemler
                   }),
-                  _buildCupertinoButton(context, 'Vardiya Kişi Sayısı', CupertinoIcons.check_mark_circled, () {
+                  _buildCupertinoButton(context, 'Vardiya Kişi Sayısı', CupertinoIcons.clock_fill, () {
                     Navigator.of(context).push(CupertinoPageRoute(builder: (context) => VardiyaKisiSayfasi()));
                   }),
                 ],
               ),
             ),
-            // Buraya daha fazla widget ekleyebilirsiniz.
+            // Yeni eklenen butonlar
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Row(
+                children: <Widget>[
+                  _buildCupertinoButton(context, 'Vardiyaya Personel Ata', CupertinoIcons.add, () {
+                    // Navigator.of(context).push(CupertinoPageRoute(builder: (context) => YeniEkran7()));
+                    // TODO: Yeni Ekran 7 navigasyon işlemini buraya ekleyin
+                  }),
+                  _buildCupertinoButton(context, 'Yeni Ekran 8', CupertinoIcons.add_circled, () {
+                    // Navigator.of(context).push(CupertinoPageRoute(builder: (context) => YeniEkran8()));
+                    // TODO: Yeni Ekran 8 navigasyon işlemini buraya ekleyin
+                  }),
+                ],
+              ),
+            ),
           ],
         ),
       ),
