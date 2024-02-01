@@ -18,9 +18,7 @@ class VardiyaKisiSayfasi extends StatefulWidget {
 }
 
 class _VardiyaKisiSayfasiState extends State<VardiyaKisiSayfasi> {
-  List<String> haftaIciVardiyalar = [];
-  List<String> haftaSonuVardiyalar = [];
-  List<String> resmiTatilVardiyalar = [];
+  List<String> tumVardiyalar = [];
 
   @override
   void initState() {
@@ -30,74 +28,39 @@ class _VardiyaKisiSayfasiState extends State<VardiyaKisiSayfasi> {
 
   Future<void> _loadVardiyalar() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    // Vardiya sayılarını al (varsayılan olarak 0)
-    final int haftaIciVardiyaSayisi = prefs.getInt('haftaIciVardiyaSayisi') ?? 0;
-    final int haftaSonuVardiyaSayisi = prefs.getInt('haftaSonuVardiyaSayisi') ?? 0;
-    final int resmiTatilVardiyaSayisi = prefs.getInt('resmiTatilVardiyaSayisi') ?? 0;
 
-    // Vardiyaları yükle
+    // Vardiyaları yükle ve türlerine göre sırala
+    List<String> haftaIciVardiyalar = _loadVardiyaTuru(prefs, 'haftaIciVardiya', 'Haftaiçi ');
+    List<String> haftaSonuVardiyalar = _loadVardiyaTuru(prefs, 'haftaSonuVardiya', 'Haftasonu ');
+    List<String> resmiTatilVardiyalar = _loadVardiyaTuru(prefs, 'resmiTatilVardiya', 'Resmi Tatil ');
+
+    // Vardiyaları birleştir ve saatlerine göre sırala
     setState(() {
-      haftaIciVardiyalar = List.generate(
-        haftaIciVardiyaSayisi,
-            (i) => prefs.getString('haftaIciVardiya$i') ?? '',
-      );
-      haftaSonuVardiyalar = List.generate(
-        haftaSonuVardiyaSayisi,
-            (i) => prefs.getString('haftaSonuVardiya$i') ?? '',
-      );
-      resmiTatilVardiyalar = List.generate(
-        resmiTatilVardiyaSayisi,
-            (i) => prefs.getString('resmiTatilVardiya$i') ?? '',
-      );
+      tumVardiyalar = [...haftaIciVardiyalar, ...haftaSonuVardiyalar, ...resmiTatilVardiyalar]
+        ..sort((a, b) => a.compareTo(b));
     });
+  }
+
+  List<String> _loadVardiyaTuru(SharedPreferences prefs, String key, String prefix) {
+    final int count = prefs.getInt('${key}Sayisi') ?? 0;
+    return List.generate(
+      count,
+          (i) => '$prefix${i + 1}. Vardiya: ${prefs.getString('$key$i') ?? ''}',
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
       navigationBar: CupertinoNavigationBar(
-        middle: Text('Vardiya Saatleri'),
+        middle: Text('Vardiya Listesi'),
       ),
       child: SafeArea(
-        child: CustomScrollView(
-          slivers: <Widget>[
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: EdgeInsets.all(8),
-                child: Text('Haftaiçi Vardiyalar', style: CupertinoTheme.of(context).textTheme.navLargeTitleTextStyle),
-              ),
-            ),
-            SliverList(
-              delegate: SliverChildBuilderDelegate(
-                    (context, index) => VardiyaWidget(haftaIciVardiyalar[index]),
-                childCount: haftaIciVardiyalar.length,
-              ),
-            ),
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: EdgeInsets.all(8),
-                child: Text('Haftasonu Vardiyalar', style: CupertinoTheme.of(context).textTheme.navLargeTitleTextStyle),
-              ),
-            ),
-            SliverList(
-              delegate: SliverChildBuilderDelegate(
-                    (context, index) => VardiyaWidget(haftaSonuVardiyalar[index]),
-                childCount: haftaSonuVardiyalar.length,
-              ),
-            ),
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: EdgeInsets.all(8),
-                child: Text('Resmi Tatil Vardiyalar', style: CupertinoTheme.of(context).textTheme.navLargeTitleTextStyle),
-              ),
-            ),
-            SliverList(
-              delegate: SliverChildBuilderDelegate(
-                    (context, index) => VardiyaWidget(resmiTatilVardiyalar[index]),
-                childCount: resmiTatilVardiyalar.length,
-              ),
-            ),
-          ],
+        child: ListView.builder(
+          itemCount: tumVardiyalar.length,
+          itemBuilder: (context, index) {
+            return VardiyaWidget(tumVardiyalar[index]);
+          },
         ),
       ),
     );

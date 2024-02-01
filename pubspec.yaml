@@ -11,24 +11,23 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_localizations:
-    sdk: flutter # Bu satırı ekledim
+    sdk: flutter
   shared_preferences: ^2.2.2
   table_calendar: ^3.0.0
   syncfusion_flutter_datepicker: ^24.1.45
   intl: ^0.18.0
-  cupertino_icons: ^1.0.6 # Eğer bu bağımlılığı kullanıyorsanız ekleyin
+  cupertino_icons: ^1.0.6
   showcaseview: '2.0.3'
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
-
 flutter:
+  uses-material-design: true
   assets:
     - assets/logo.jpg
     - assets/icons/gun_ayari.png
     - assets/icons/liste_tarihi_sec.png
     - assets/icons/personeller.png
     - assets/openings/opening.jpg
-

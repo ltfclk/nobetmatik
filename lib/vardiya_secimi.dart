@@ -64,19 +64,19 @@ class _VardiyaSecimiState extends State<VardiyaSecimi> {
       haftaIciControllers = List.generate(
         haftaIciVardiyaSayisi,
             (index) => TextEditingController(
-          text: prefs.getString('haftaIciVardiya$index') ?? '08.00-16.00',
+          text: prefs.getString('haftaIciVardiya$index'),
         ),
       );
       haftaSonuControllers = List.generate(
         haftaSonuVardiyaSayisi,
             (index) => TextEditingController(
-          text: prefs.getString('haftaSonuVardiya$index') ?? '08.00-16.00',
+          text: prefs.getString('haftaSonuVardiya$index'),
         ),
       );
       resmiTatilControllers = List.generate(
         resmiTatilVardiyaSayisi,
             (index) => TextEditingController(
-          text: prefs.getString('resmiTatilVardiya$index') ?? '08.00-16.00',
+          text: prefs.getString('resmiTatilVardiya$index'),
         ),
       );
     });
