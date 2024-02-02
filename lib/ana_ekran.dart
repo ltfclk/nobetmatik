@@ -8,6 +8,7 @@ import 'gun_ayari.dart';
 import 'kesin_gun.dart';
 import 'vardiya_secimi.dart';
 import 'vardiya_kisi_sayfasi.dart';
+import 'bos_liste.dart';
 // Diğer ekranlarınızın importlarını buraya ekleyin.
 
 void main() => runApp(MyApp());
@@ -165,8 +166,7 @@ class _AnaEkranState extends State<AnaEkran> {
               child: Row(
                 children: <Widget>[
                   _buildCupertinoButton(context, 'Vardiyaya Personel Ata', CupertinoIcons.add, () {
-                    // Navigator.of(context).push(CupertinoPageRoute(builder: (context) => YeniEkran7()));
-                    // TODO: Yeni Ekran 7 navigasyon işlemini buraya ekleyin
+                    Navigator.of(context).push(CupertinoPageRoute(builder: (context) => BosListe()));
                   }),
                   _buildCupertinoButton(context, 'Yeni Ekran 8', CupertinoIcons.add_circled, () {
                     // Navigator.of(context).push(CupertinoPageRoute(builder: (context) => YeniEkran8()));
